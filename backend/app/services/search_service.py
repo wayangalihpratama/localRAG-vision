@@ -14,7 +14,13 @@ class SearchService:
         table = self.db.open_table(self.table_name)
         query_vector = self.model.encode(query)
 
-        results = table.search(query_vector).limit(limit).to_list()
+        # LanceDB hybrid search combines vector and FTS (BM25)
+        # Note: requires the FTS index created in indexing_service
+        results = (
+            table.search(query_vector, query_type="hybrid")
+            .limit(limit)
+            .to_list()
+        )
         return results
 
 

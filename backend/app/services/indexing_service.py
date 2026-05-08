@@ -35,7 +35,10 @@ class IndexingService:
             table = self.db.open_table(self.table_name)
             table.add(data)
         else:
-            self.db.create_table(self.table_name, data=data)
+            table = self.db.create_table(self.table_name, data=data)
+
+        # Create/Update FTS index for keyword search
+        table.create_fts_index("text", replace=True)
 
         return len(chunks)
 
