@@ -96,7 +96,9 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
       {/* 1. Knowledge Library (Left) */}
-      <aside className={`w-80 glass-panel border-r flex flex-col transition-all duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full absolute"}`}>
+      <aside className={`md:w-80 glass-panel md:border-r flex flex-col z-50 transition-all duration-300 
+        ${isSidebarOpen ? "translate-x-0 w-80" : "-translate-x-full w-0"} 
+        ${isSidebarOpen ? "fixed inset-y-0 left-0 md:relative" : "absolute"}`}>
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center neon-glow">
@@ -104,6 +106,9 @@ export default function Dashboard() {
             </div>
             <h1 className="font-bold text-lg tracking-tight">LocalRAG</h1>
           </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 hover:bg-foreground/5 rounded-lg">
+            <Plus size={18} className="rotate-45" />
+          </button>
         </div>
 
         <div className="px-4 mb-4">
@@ -141,36 +146,39 @@ export default function Dashboard() {
       </aside>
 
       {/* 2. Conversation Nexus (Center) */}
-      <main className="flex-1 flex flex-col relative min-w-0">
-        <header className="h-16 glass-panel border-b flex items-center justify-between px-6 z-10">
-          <div className="flex items-center gap-4">
+      <main className="flex-1 flex flex-col relative min-w-0 w-full">
+        <header className="h-16 glass-panel border-b flex items-center justify-between px-4 md:px-6 z-10">
+          <div className="flex items-center gap-2 md:gap-4">
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-foreground/5 rounded-lg text-foreground/60">
               <SidebarIcon size={20} />
             </button>
             <div className="flex flex-col">
-              <span className="text-sm font-bold">RAG Vision</span>
-              <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest flex items-center gap-1">
+              <span className="text-sm font-bold truncate max-w-[120px] md:max-w-none">RAG Vision</span>
+              <span className="text-[9px] md:text-[10px] text-green-500 font-bold uppercase tracking-widest flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                 System Healthy
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button className="p-2 hover:bg-foreground/5 rounded-lg text-foreground/60 md:hidden">
+               <FileText size={20} onClick={() => activeSource && setActiveSource(activeSource)} />
+            </button>
             <button className="p-2 hover:bg-foreground/5 rounded-lg text-foreground/60">
               <Search size={20} />
             </button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start animate-in fade-in slide-in-from-bottom-4 duration-500"}`}>
-              <div className={`max-w-[80%] p-5 rounded-2xl ${msg.type === "user" ? "bg-brand text-white shadow-xl shadow-brand/20" : "glass-panel neon-glow border-brand/20"}`}>
+              <div className={`max-w-[90%] md:max-w-[80%] p-4 md:p-5 rounded-2xl ${msg.type === "user" ? "bg-brand text-white shadow-xl shadow-brand/20" : "glass-panel neon-glow border-brand/20"}`}>
                 <div className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</div>
                 {msg.type === "ai" && msg.citations && msg.citations.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-foreground/10">
                     {msg.citations.map((cite: any) => (
-                      <button
+                      <button 
                         key={cite.id}
                         onClick={() => setActiveSource(cite)}
                         className="text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand px-2 py-1 rounded-md hover:bg-brand/20 transition-all"
@@ -185,28 +193,28 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <footer className="p-6 border-t border-foreground/10 glass-panel">
+        <footer className="p-4 md:p-6 border-t border-foreground/10 glass-panel">
           <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto relative group">
-            <input
-              type="text"
+            <input 
+              type="text" 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask anything about your documents..."
-              className="w-full bg-foreground/5 border border-foreground/10 focus:border-brand/50 focus:ring-4 focus:ring-brand/10 rounded-2xl py-4 pl-6 pr-16 text-sm outline-none transition-all placeholder:text-foreground/30"
+              placeholder="Ask anything..."
+              className="w-full bg-foreground/5 border border-foreground/10 focus:border-brand/50 focus:ring-4 focus:ring-brand/10 rounded-2xl py-3 md:py-4 pl-5 md:pl-6 pr-14 md:pr-16 text-sm outline-none transition-all placeholder:text-foreground/30"
             />
-            <button className="absolute right-2 top-2 p-3 bg-brand hover:bg-brand-vibrant text-white rounded-xl transition-all shadow-lg shadow-brand/20 active:scale-90 group-focus-within:-translate-x-1">
+            <button className="absolute right-2 top-2 p-2.5 md:p-3 bg-brand hover:bg-brand-vibrant text-white rounded-xl transition-all shadow-lg shadow-brand/20 active:scale-90 group-focus-within:-translate-x-1">
               <Send size={18} />
             </button>
           </form>
           <div className="text-center mt-3 text-[10px] text-foreground/40 font-medium">
-            LocalRAG Vision 2026 • Local Processing Active
+            LocalRAG 2026 • Local
           </div>
         </footer>
       </main>
 
       {/* 3. Source Preview (Right) - Collapsible */}
       {activeSource && (
-        <aside className="w-96 glass-panel border-l flex flex-col animate-in slide-in-from-right duration-500">
+        <aside className="fixed inset-0 z-50 md:relative md:inset-auto md:w-96 bg-background/80 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none md:glass-panel md:border-l flex flex-col animate-in slide-in-from-right md:slide-in-from-right duration-500">
           <header className="h-16 border-b flex items-center px-6 justify-between">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-brand" />

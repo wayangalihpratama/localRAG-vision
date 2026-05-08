@@ -39,5 +39,20 @@ The system must support dynamic theme switching using Tailwind 4 CSS variables.
 3. **Click Citation** -> Right Sidebar slides in with source text highlighted.
 4. **Theme Toggle** -> Switch between Dark and Light modes without page reload, preserving state.
 
+## 4. Mobile Responsiveness Strategy 📱
+To maintain premium usability on small viewports, the layout must adapt as follows:
+
+| Component | Desktop (1280px+) | Mobile (< 768px) |
+| :--- | :--- | :--- |
+| **Knowledge Sidebar** | Fixed (Left) | Off-canvas (Hamburger Menu) |
+| **Conversation Nexus**| Center (Fixed Width) | Full Width (100%) |
+| **Source Preview** | Fixed (Right) | Bottom Sheet (Overlay) |
+| **Input Area** | Wide | Full Width + Adaptive Height |
+
+### 📋 Mobile UAC
+- [ ] Sidebars must use a `transition` for smooth entrance/exit.
+- [ ] Citation click on mobile triggers a **Bottom Sheet** rather than a right sidebar.
+- [ ] Minimum touch target of `44x44px` for all interactive elements.
+
 ## 🖼️ UI Mockup
 ![LocalRAG Vision Mockup](./assets/dashboard_mockup.png)
