@@ -22,7 +22,7 @@ export default function Dashboard() {
     const userMsg: Message = { id: Date.now(), type: "user", text: currentQuery };
     setMessages(prev => [...prev, userMsg]);
     setQuery("");
-    
+
     const aiMessageId = Date.now() + 1;
     setMessages(prev => [...prev, { id: aiMessageId, type: "ai", text: "", citations: [] }]);
 
@@ -41,7 +41,7 @@ export default function Dashboard() {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value);
         const lines = chunk.split("\n").filter(l => l.trim());
 
@@ -49,12 +49,12 @@ export default function Dashboard() {
           try {
             const data = JSON.parse(line);
             if (data.type === "citations") {
-              setMessages(prev => prev.map(m => 
+              setMessages(prev => prev.map(m =>
                 m.id === aiMessageId ? { ...m, citations: data.data } : m
               ));
             } else if (data.type === "content") {
               accumulatedContent += data.data;
-              setMessages(prev => prev.map(m => 
+              setMessages(prev => prev.map(m =>
                 m.id === aiMessageId ? { ...m, text: accumulatedContent } : m
               ));
             }
@@ -65,7 +65,7 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Chat failed:", error);
-      setMessages(prev => prev.map(m => 
+      setMessages(prev => prev.map(m =>
         m.id === aiMessageId ? { ...m, text: "Error connecting to AI engine. Please check if backend is running." } : m
       ));
     }
@@ -73,12 +73,12 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
-      <KnowledgeLibrary 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
+      <KnowledgeLibrary
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
-      <ConversationNexus 
+      <ConversationNexus
         messages={messages}
         query={query}
         setQuery={setQuery}
@@ -88,7 +88,7 @@ export default function Dashboard() {
         activeSource={activeSource}
       />
 
-      <SourcePreview 
+      <SourcePreview
         activeSource={activeSource}
         onClose={() => setActiveSource(null)}
       />
