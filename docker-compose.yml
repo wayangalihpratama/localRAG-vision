@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - DATABASE_URL=sqlite:///./localrag.db
       - REDIS_URL=redis://redis:6379/0
       - S3_ENDPOINT=http://minio:9000
@@ -16,18 +16,12 @@ services:
       - S3_BUCKET=raw-documents
 
     depends_on:
-      - ollama
       - redis
       - minio
     networks:
       - localrag-network
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: 1
-#              capabilities: [gpu]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   worker:
     build:
@@ -36,7 +30,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - REDIS_URL=redis://redis:6379/0
       - S3_ENDPOINT=http://minio:9000
       - S3_ACCESS_KEY=minioadmin
@@ -46,16 +40,10 @@ services:
     depends_on:
       - redis
       - minio
-      - ollama
     networks:
       - localrag-network
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: 1
-#              capabilities: [gpu]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
     build:
@@ -82,22 +70,6 @@ services:
     networks:
       - localrag-network
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - localrag-network
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: 1
-#              capabilities: [gpu]
-
   redis:
     image: redis:7-alpine
     networks:
@@ -122,5 +94,4 @@ networks:
     driver: bridge
 
 volumes:
-  ollama-data:
   minio-data:

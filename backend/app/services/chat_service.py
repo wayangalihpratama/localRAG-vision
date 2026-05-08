@@ -42,7 +42,7 @@ class ChatService:
         """
 
         # 4. Stream from Ollama
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             # First, send the citations metadata as a structured JSON object
             yield json.dumps({"type": "citations", "data": citations}) + "\n"
 
