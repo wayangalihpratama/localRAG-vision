@@ -40,7 +40,7 @@ graph TD
 
 | Component | Technology | Role |
 | :--- | :--- | :--- |
-| **Inference Engine** | **Ollama** | Local hosting for Llama 3, Mistral, and LLaVA. |
+| **Inference Engine** | **Ollama (Native)** | Host-based engine for Llama 3 and LLaVA. Connected via `host-gateway` for GPU (Metal) acceleration. |
 | **Orchestration** | **LangChain / LlamaIndex** | Workflow management, agents, and conversational memory. |
 | **API Framework** | **FastAPI** | Async processing for ingestion and real-time streaming. |
 | **Vector Store** | **LanceDB** | Optimized for video and multimodal columnar storage. |

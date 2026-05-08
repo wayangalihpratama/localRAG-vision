@@ -27,22 +27,31 @@
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Docker & Docker Compose
-- [Ollama](https://ollama.com/) installed locally (or running in container)
+- **Docker & Docker Compose**
+- **[Ollama](https://ollama.com/) (Native Installation)**: For optimal performance and GPU (Metal) acceleration on macOS, Ollama should run natively on the host machine.
 
 ### Setup & Run
-1. **Initialize Environment**:
+
+1. **Configure Native Ollama**:
+   To allow Docker containers to communicate with your host's Ollama, set the following environment variable and restart the Ollama application:
    ```bash
-   cp .env.example .env
-   # Update .env with your local settings if necessary
+   launchctl setenv OLLAMA_HOST "0.0.0.0"
    ```
-2. **Start Services** (using the RAG Lifecycle Wrapper):
+
+2. **Pull Required Models**:
+   ```bash
+   ollama pull llama3
+   ollama pull llava
+   ```
+
+3. **Start LocalRAG Infrastructure**:
    ```bash
    ./rag.sh up
    ```
-3. **Access**:
-   - **Main Dashboard**: [http://localhost](http://localhost)
-   - **API Docs**: [http://localhost/docs](http://localhost/docs)
+
+4. **Access**:
+   - **Main Dashboard**: [http://localhost](http://localhost) (via Nginx) or [http://localhost:3000](http://localhost:3000) (Direct)
+   - **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
    - **MinIO Console**: [http://localhost:9001](http://localhost:9001)
 
 ## 🧪 Testing
