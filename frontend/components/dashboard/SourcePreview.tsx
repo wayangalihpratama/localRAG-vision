@@ -12,6 +12,10 @@ export const SourcePreview: React.FC<SourcePreviewProps> = ({ activeSource, onCl
 
   return (
     <aside className="fixed inset-0 z-50 md:relative md:inset-auto md:w-96 bg-background/80 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none md:glass-panel md:border-l flex flex-col animate-in slide-in-from-right md:slide-in-from-right duration-500">
+      {/* Mobile Pull Handle */}
+      <div className="md:hidden flex justify-center pt-2 pb-1">
+        <div className="w-12 h-1.5 bg-foreground/10 rounded-full"></div>
+      </div>
       <header className="h-16 border-b flex items-center px-6 justify-between">
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-brand" />
@@ -28,7 +32,7 @@ export const SourcePreview: React.FC<SourcePreviewProps> = ({ activeSource, onCl
             "{activeSource.text}"
           </div>
         </div>
-        
+
         {activeSource.metadata && (
           <div className="space-y-3">
              <div className="text-xs font-bold text-foreground/40 uppercase tracking-widest">Metadata</div>

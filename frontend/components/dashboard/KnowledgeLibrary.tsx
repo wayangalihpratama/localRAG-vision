@@ -8,10 +8,10 @@ interface KnowledgeLibraryProps {
 
 export const KnowledgeLibrary: React.FC<KnowledgeLibraryProps> = ({ isOpen, onClose }) => {
   return (
-    <aside className={`md:w-80 glass-panel md:border-r flex flex-col z-50 transition-all duration-300 
-      ${isOpen ? "translate-x-0 w-80" : "-translate-x-full w-0"} 
+    <aside className={`md:w-80 glass-panel md:border-r flex flex-col z-50 transition-all duration-300
+      ${isOpen ? "translate-x-0 w-80" : "-translate-x-full w-0"}
       ${isOpen ? "fixed inset-y-0 left-0 md:relative" : "absolute"}`}>
-      
+
       <div className="p-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center neon-glow">
@@ -31,18 +31,18 @@ export const KnowledgeLibrary: React.FC<KnowledgeLibraryProps> = ({ isOpen, onCl
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-4 space-y-2">
-        <div className="text-xs font-semibold text-foreground/40 uppercase tracking-widest px-2 mb-2">Documents</div>
-        <div className="group p-3 rounded-xl hover:bg-foreground/5 cursor-pointer border border-transparent hover:border-foreground/10 transition-all">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-brand/10 rounded-lg text-brand group-hover:scale-110 transition-transform">
+      <nav className="flex-1 overflow-y-auto px-4 space-y-3 py-4">
+        <div className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] px-3 mb-2">Knowledge Assets</div>
+        <div className="group p-3.5 rounded-2xl bg-brand/5 border border-brand/10 hover:bg-brand/10 hover:border-brand/30 cursor-pointer transition-all duration-300">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-brand/20 rounded-xl text-brand group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(124,58,237,0.2)]">
               <FileText size={20} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">2023 Annual Report.pdf</div>
-              <div className="text-[10px] text-brand font-bold uppercase mt-1 flex items-center gap-1">
-                <div className="w-1 h-1 rounded-full bg-brand animate-pulse"></div>
-                Analyzing 85%
+              <div className="text-sm font-semibold truncate tracking-tight text-foreground/90">2023 Annual Report.pdf</div>
+              <div className="text-[10px] text-brand-vibrant font-bold uppercase mt-1.5 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(124,58,237,0.6)]"></div>
+                Analyzing • 85%
               </div>
             </div>
           </div>
