@@ -24,7 +24,7 @@ export default function Dashboard() {
     setQuery("");
 
     const aiMessageId = Date.now() + 1;
-    setMessages(prev => [...prev, { id: aiMessageId, type: "ai", text: "", citations: [] }]);
+    setMessages(prev => [...prev, { id: aiMessageId, type: "ai", text: "", citations: [], isThinking: true }]);
 
     try {
       const response = await fetch("http://localhost:8000/api/v1/chat/completions", {
@@ -50,12 +50,12 @@ export default function Dashboard() {
             const data = JSON.parse(line);
             if (data.type === "citations") {
               setMessages(prev => prev.map(m =>
-                m.id === aiMessageId ? { ...m, citations: data.data } : m
+                m.id === aiMessageId ? { ...m, citations: data.data, isThinking: false } : m
               ));
             } else if (data.type === "content") {
               accumulatedContent += data.data;
               setMessages(prev => prev.map(m =>
-                m.id === aiMessageId ? { ...m, text: accumulatedContent } : m
+                m.id === aiMessageId ? { ...m, text: accumulatedContent, isThinking: false } : m
               ));
             }
           } catch (e) {
@@ -66,7 +66,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Chat failed:", error);
       setMessages(prev => prev.map(m =>
-        m.id === aiMessageId ? { ...m, text: "Error connecting to AI engine. Please check if backend is running." } : m
+        m.id === aiMessageId ? { ...m, text: "Error connecting to AI engine. Please check if backend is running.", isThinking: false } : m
       ));
     }
   };

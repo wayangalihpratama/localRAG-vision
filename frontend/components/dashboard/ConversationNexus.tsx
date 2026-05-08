@@ -56,7 +56,18 @@ export const ConversationNexus: React.FC<ConversationNexusProps> = ({
                 ? "bg-brand text-white shadow-xl shadow-brand/20"
                 : "glass-panel border-brand/30 shadow-[0_0_20px_rgba(124,58,237,0.05)]"
             }`}>
-              <div className="text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap tracking-tight text-foreground/90">{msg.text}</div>
+              <div className="text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap tracking-tight text-foreground/90">
+                {msg.isThinking ? (
+                  <div className="flex items-center gap-1.5 py-1">
+                    <div className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                    <div className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce"></div>
+                    <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-brand animate-pulse">Thinking</span>
+                  </div>
+                ) : (
+                  msg.text
+                )}
+              </div>
               {msg.type === "ai" && msg.citations && msg.citations.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-foreground/10">
                   {msg.citations.map((cite: any) => (

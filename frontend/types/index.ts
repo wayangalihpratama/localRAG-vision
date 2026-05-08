@@ -9,4 +9,5 @@ export interface Message {
   type: "user" | "ai";
   text: string;
   citations?: Citation[];
+  isThinking?: boolean;
 }
