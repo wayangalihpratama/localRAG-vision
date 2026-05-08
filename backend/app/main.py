@@ -5,28 +5,23 @@ from fastapi.middleware.cors import CORSMiddleware
 import boto3
 from botocore.client import Config
 from .worker import process_document
+from .config import settings
 
-app = FastAPI(title="LocalRAG Vision API")
-
-# MinIO Configuration
-S3_ENDPOINT = os.getenv("S3_ENDPOINT", "http://minio:9000")
-S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", "minioadmin")
-S3_SECRET_KEY = os.getenv("S3_SECRET_KEY", "minioadmin")
-S3_BUCKET = os.getenv("S3_BUCKET", "raw-documents")
+app = FastAPI(title=settings.PROJECT_NAME)
 
 s3_client = boto3.client(
     "s3",
-    endpoint_url=S3_ENDPOINT,
-    aws_access_key_id=S3_ACCESS_KEY,
-    aws_secret_access_key=S3_SECRET_KEY,
+    endpoint_url=settings.S3_ENDPOINT,
+    aws_access_key_id=settings.S3_ACCESS_KEY,
+    aws_secret_access_key=settings.S3_SECRET_KEY,
     config=Config(signature_version="s3v4"),
 )
 
 # Ensure bucket exists
 try:
-    s3_client.head_bucket(Bucket=S3_BUCKET)
+    s3_client.head_bucket(Bucket=settings.S3_BUCKET)
 except Exception:
-    s3_client.create_bucket(Bucket=S3_BUCKET)
+    s3_client.create_bucket(Bucket=settings.S3_BUCKET)
 
 # Setup CORS
 app.add_middleware(
@@ -48,12 +43,14 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.post("/api/v1/ingest/upload", status_code=status.HTTP_202_ACCEPTED)
+@app.post(
+    "/api/v1/ingest/upload", status_code=status.HTTP_202_ACCEPTED
+)  # noqa: E501
 async def upload_document(file: UploadFile = File(...)):
     # Validate file type
     allowed_types = [
         "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # noqa: E501
         "text/plain",
     ]
     if file.content_type not in allowed_types:
@@ -68,7 +65,7 @@ async def upload_document(file: UploadFile = File(...)):
 
     try:
         # Upload to MinIO
-        s3_client.upload_fileobj(file.file, S3_BUCKET, s3_key)
+        s3_client.upload_fileobj(file.file, settings.S3_BUCKET, s3_key)
 
         # Trigger Background Task
         task = process_document.delay(s3_key)

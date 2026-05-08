@@ -1,22 +1,62 @@
 import os
+import tempfile
+import boto3
+from botocore.client import Config
 from celery import Celery
+from docling.document_converter import DocumentConverter
+from .config import settings
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
-
-celery_app = Celery("worker", broker=REDIS_URL, backend=REDIS_URL)
-
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
+s3_client = boto3.client(
+    "s3",
+    endpoint_url=settings.S3_ENDPOINT,
+    aws_access_key_id=settings.S3_ACCESS_KEY,
+    aws_secret_access_key=settings.S3_SECRET_KEY,
+    config=Config(signature_version="s3v4"),  # noqa: E501
 )
+
+celery_app = Celery(
+    "worker", broker=settings.REDIS_URL, backend=settings.REDIS_URL
+)
+
+# Lazy-loaded Docling Converter
+_converter = None
+
+
+def get_converter():
+    global _converter
+    if _converter is None:
+        _converter = DocumentConverter()
+    return _converter
 
 
 @celery_app.task(name="process_document")
-def process_document(file_path: str):
+def process_document(s3_key: str):
     """
-    Placeholder for document processing logic (Docling, Chunking, Indexing).
+    Downloads a document from MinIO and extracts structured content
+    using Docling.
     """
-    return {"status": "processing", "file": file_path}
+    converter = get_converter()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        local_path = os.path.join(temp_dir, s3_key)
+
+        try:
+            # 1. Download from MinIO
+            s3_client.download_file(settings.S3_BUCKET, s3_key, local_path)
+
+            # 2. Convert with Docling
+            result = converter.convert(local_path)
+
+            # 3. Export to Markdown
+            markdown_content = result.document.export_to_markdown()
+
+            # TODO: Add Chunking and Indexing in the next story
+
+            return {
+                "status": "completed",
+                "file": s3_key,
+                "extraction_length": len(markdown_content),
+                "preview": markdown_content[:500] if markdown_content else "",
+            }
+
+        except Exception as e:
+            return {"status": "failed", "file": s3_key, "error": str(e)}
