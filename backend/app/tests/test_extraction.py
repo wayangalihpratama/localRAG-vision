@@ -1,47 +1,43 @@
-import pytest  # noqa
+import pytest
 from unittest.mock import patch, MagicMock
 from app.worker import process_document
 
 
-@patch("app.worker.s3_client")
-@patch("app.worker.get_converter")
-def test_process_document_success(mock_get_converter, mock_s3):
-    # Mock S3 download
-    mock_s3.download_file = MagicMock()
+@patch("app.worker.storage_service")
+@patch("app.worker.extraction_service")
+@patch("app.worker.indexing_service")
+def test_process_document_success(
+    mock_indexing, mock_extraction, mock_storage
+):
+    # Mock Storage
+    mock_storage.download_file.return_value = "/tmp/test.pdf"
 
-    # Mock Docling conversion
-    mock_converter = MagicMock()
-    mock_result = MagicMock()
-    mock_result.document.export_to_markdown.return_value = (
-        "# Test Content\nThis is a table."
-    )
-    mock_converter.convert.return_value = mock_result
-    mock_get_converter.return_value = mock_converter
+    # Mock Extraction
+    mock_extraction.extract_markdown.return_value = "# Test Content"
 
-    # We'll use a dummy s3_key
+    # Mock Indexing
+    mock_indexing.index_markdown.return_value = 1
+
     s3_key = "test-doc.pdf"
-
-    # Trigger the task synchronously for testing
     result = process_document(s3_key)
 
     assert result["status"] == "completed"
     assert result["file"] == s3_key
-    assert "extraction_length" in result
-    assert result["preview"] == "# Test Content\nThis is a table."
+    assert result["chunks_indexed"] == 1
 
-    # Verify mocks were called
-    mock_s3.download_file.assert_called_once()
-    mock_converter.convert.assert_called_once()
+    # Verify service calls
+    mock_storage.download_file.assert_called_once()
+    mock_extraction.extract_markdown.assert_called_once()
+    mock_indexing.index_markdown.assert_called_once()
 
 
-@patch("app.worker.s3_client")
-def test_process_document_failure(mock_s3):
-    # Mock S3 failure
-    mock_s3.download_file.side_effect = Exception("S3 Download Error")
+@patch("app.worker.storage_service")
+def test_process_document_failure(mock_storage):
+    # Mock failure
+    mock_storage.download_file.side_effect = Exception("Storage Error")
 
-    s3_key = "missing-doc.pdf"
+    s3_key = "missing.pdf"
     result = process_document(s3_key)
 
     assert result["status"] == "failed"
-    assert "error" in result
-    assert "S3 Download Error" in result["error"]
+    assert "Storage Error" in result["error"]
