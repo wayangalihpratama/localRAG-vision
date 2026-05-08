@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Database, FileText, Settings, Upload } from "lucide-react";
+import { Plus, Database, FileText, Settings, Upload, Trash2 } from "lucide-react";
 import { ingestApi } from "../../lib/api-client";
 
 interface KnowledgeLibraryProps {
@@ -7,13 +7,21 @@ interface KnowledgeLibraryProps {
   onClose: () => void;
 }
 
+interface DocumentAsset {
+  id: string;
+  filename: string;
+  status: "processing" | "completed" | "failed";
+  created_at: string;
+}
+
 export const KnowledgeLibrary: React.FC<KnowledgeLibraryProps> = ({ isOpen, onClose }) => {
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<DocumentAsset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const fetchFiles = async () => {
-    setIsLoading(true);
+    // Only show full loading skeleton on first fetch
+    if (files.length === 0) setIsLoading(true);
     try {
       const response = await ingestApi.listFiles();
       if (response.status === 200) {
@@ -28,6 +36,11 @@ export const KnowledgeLibrary: React.FC<KnowledgeLibraryProps> = ({ isOpen, onCl
 
   useEffect(() => {
     fetchFiles();
+    // Poll for status updates every 5 seconds if there are processing files
+    const interval = setInterval(() => {
+      fetchFiles();
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleUploadClick = () => {
@@ -47,6 +60,19 @@ export const KnowledgeLibrary: React.FC<KnowledgeLibraryProps> = ({ isOpen, onCl
       }
     } catch (error) {
       console.error("Upload failed:", error);
+    }
+  };
+
+  const handleDelete = async (fileId: string) => {
+    if (!confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+      await ingestApi.deleteFile(fileId);
+      // Refresh list immediately
+      fetchFiles();
+    } catch (err) {
+      console.error('Failed to delete file:', err);
+      alert('Failed to delete document.');
     }
   };
 
@@ -106,19 +132,45 @@ export const KnowledgeLibrary: React.FC<KnowledgeLibraryProps> = ({ isOpen, onCl
           </div>
         )}
 
-        {!isLoading && files.map((fileName, idx) => (
-          <div key={idx} className="group p-3.5 rounded-2xl bg-brand/5 border border-brand/10 hover:bg-brand/10 hover:border-brand/30 cursor-pointer transition-all duration-300">
+        {!isLoading && files.map((file) => (
+          <div key={file.id} className="group p-3.5 rounded-2xl bg-brand/5 border border-brand/10 hover:bg-brand/10 hover:border-brand/30 cursor-pointer transition-all duration-300">
             <div className="flex items-center gap-4">
               <div className="p-2.5 bg-brand/20 rounded-xl text-brand group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(124,58,237,0.2)]">
                 <FileText size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate tracking-tight text-foreground/90">{fileName}</div>
-                <div className="text-[10px] text-brand-vibrant font-bold uppercase mt-1.5 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand shadow-[0_0_8px_rgba(124,58,237,0.6)]"></div>
-                  Indexed
+                <div className="text-sm font-semibold truncate tracking-tight text-foreground/90">{file.filename}</div>
+                <div className="text-[10px] uppercase mt-1.5 flex items-center gap-2 font-bold">
+                  {file.status === "processing" && (
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(124,58,237,0.6)]"></div>
+                      <span className="text-brand-vibrant">Analyzing</span>
+                    </>
+                  )}
+                  {file.status === "completed" && (
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                      <span className="text-emerald-500">Indexed</span>
+                    </>
+                  )}
+                  {file.status === "failed" && (
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></div>
+                      <span className="text-rose-500">Failed</span>
+                    </>
+                  )}
                 </div>
               </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(file.id);
+                }}
+                className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 text-foreground/40 rounded-lg transition-all"
+                title="Delete Asset"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           </div>
         ))}

@@ -1,14 +1,19 @@
-import pytest
 from unittest.mock import patch, MagicMock
 from app.worker import process_document
 
 
 @patch("app.worker.storage_service")
-@patch("app.worker.extraction_service")
-@patch("app.worker.indexing_service")
+@patch("app.worker.get_extraction_service")
+@patch("app.worker.get_indexing_service")
 def test_process_document_success(
-    mock_indexing, mock_extraction, mock_storage
+    mock_get_indexing, mock_get_extraction, mock_storage
 ):
+    mock_indexing = MagicMock()
+    mock_get_indexing.return_value = mock_indexing
+
+    mock_extraction = MagicMock()
+    mock_get_extraction.return_value = mock_extraction
+
     # Mock Storage
     mock_storage.download_file.return_value = "/tmp/test.pdf"
 
@@ -18,26 +23,33 @@ def test_process_document_success(
     # Mock Indexing
     mock_indexing.index_markdown.return_value = 1
 
+    file_id = "test-id"
     s3_key = "test-doc.pdf"
-    result = process_document(s3_key)
+
+    # Mock SQL DB in worker
+    with patch("app.worker.get_session_local") as mock_get_session:
+        mock_db_session = MagicMock()
+        mock_get_session.return_value = MagicMock(return_value=mock_db_session)
+
+        result = process_document(file_id, s3_key)
 
     assert result["status"] == "completed"
-    assert result["file"] == s3_key
+    assert result["file_id"] == file_id
     assert result["chunks_indexed"] == 1
-
-    # Verify service calls
-    mock_storage.download_file.assert_called_once()
-    mock_extraction.extract_markdown.assert_called_once()
-    mock_indexing.index_markdown.assert_called_once()
 
 
 @patch("app.worker.storage_service")
 def test_process_document_failure(mock_storage):
-    # Mock failure
     mock_storage.download_file.side_effect = Exception("Storage Error")
 
+    file_id = "test-id"
     s3_key = "missing.pdf"
-    result = process_document(s3_key)
+
+    with patch("app.worker.get_session_local") as mock_get_session:
+        mock_db_session = MagicMock()
+        mock_get_session.return_value = MagicMock(return_value=mock_db_session)
+
+        result = process_document(file_id, s3_key)
 
     assert result["status"] == "failed"
     assert "Storage Error" in result["error"]

@@ -2,7 +2,7 @@ import json
 import httpx
 from typing import AsyncGenerator
 from app.config import settings
-from app.services.search_service import search_service
+from app.services.search_service import get_search_service
 
 
 class ChatService:
@@ -14,7 +14,7 @@ class ChatService:
         self, query: str
     ) -> AsyncGenerator[str, None]:
         # 1. Retrieve Context
-        results = search_service.hybrid_search(query, limit=3)
+        results = get_search_service().hybrid_search(query, limit=3)
         context = "\n\n".join(
             [f"Source [{i+1}]: {r['text']}" for i, r in enumerate(results)]
         )
@@ -63,4 +63,11 @@ class ChatService:
                             break
 
 
-chat_service = ChatService()
+_chat_service = None
+
+
+def get_chat_service():
+    global _chat_service
+    if _chat_service is None:
+        _chat_service = ChatService()
+    return _chat_service

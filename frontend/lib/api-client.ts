@@ -25,6 +25,9 @@ export const ingestApi = {
   listFiles: async () => {
     return apiClient.get("/ingest/files");
   },
+  deleteFile: async (fileId: string) => {
+    return apiClient.delete(`/ingest/files/${fileId}`);
+  },
 };
 
 export const chatApi = {

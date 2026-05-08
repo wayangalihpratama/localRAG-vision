@@ -4,11 +4,14 @@ from app.schemas.search import SearchQuery
 from app.api.v1.endpoints.search import query_knowledge_base
 
 
-@patch("app.api.v1.endpoints.search.search_service")
+@patch("app.api.v1.endpoints.search.get_search_service")
 @pytest.mark.anyio
-async def test_search_endpoint(mock_search_service):
+async def test_search_endpoint(mock_get_search):
+    mock_search = MagicMock()
+    mock_get_search.return_value = mock_search
+
     # Mock search results
-    mock_search_service.hybrid_search.return_value = [
+    mock_search.hybrid_search.return_value = [
         {"id": "1", "text": "Result 1", "metadata": {"file": "test.pdf"}}
     ]
 
@@ -18,4 +21,4 @@ async def test_search_endpoint(mock_search_service):
     assert "results" in response
     assert len(response["results"]) == 1
     assert response["results"][0]["text"] == "Result 1"
-    mock_search_service.hybrid_search.assert_called_once()
+    mock_search.hybrid_search.assert_called_once()

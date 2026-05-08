@@ -1,8 +1,11 @@
 import os
 import uuid
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
-from app.schemas.ingest import IngestResponse
+from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
+from sqlalchemy.orm import Session
+from app.db import get_sql_db
 from app.services.storage_service import storage_service
+from app.models.document import Document, DocumentStatus
+from app.schemas.ingest import IngestResponse
 from app.worker import process_document
 
 router = APIRouter()
@@ -13,7 +16,9 @@ router = APIRouter()
     status_code=status.HTTP_202_ACCEPTED,
     response_model=IngestResponse,
 )  # noqa: E501
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...), db: Session = Depends(get_sql_db)
+):
     allowed_types = [
         "application/pdf",
         "application/vnd.openxmlformats-officedocument."
@@ -34,8 +39,22 @@ async def upload_document(file: UploadFile = File(...)):
         # 1. Storage Service Upload
         storage_service.upload_file(file.file, s3_key)
 
-        # 2. Trigger Background Task
-        task = process_document.delay(s3_key)
+        # 2. Create DB Record
+        db_doc = Document(
+            id=file_id,
+            filename=file.filename,
+            s3_key=s3_key,
+            status=DocumentStatus.PROCESSING,
+        )
+        db.add(db_doc)
+        db.commit()
+
+        # 3. Trigger Background Task
+        task = process_document.delay(file_id, s3_key)
+
+        # 4. Update task_id in DB
+        db_doc.task_id = task.id
+        db.commit()
 
         return {
             "task_id": task.id,
@@ -51,34 +70,55 @@ async def upload_document(file: UploadFile = File(...)):
 
 
 @router.get("/files", status_code=status.HTTP_200_OK)
-async def list_files():
+async def list_files(db: Session = Depends(get_sql_db)):
     """
-    Returns a list of unique filenames stored in the knowledge base.
+    Returns a list of documents and their statuses from the tracking DB.
     """
-    from app.db import get_db
+    docs = db.query(Document).order_by(Document.created_at.desc()).all()
+    return [
+        {
+            "id": doc.id,
+            "filename": doc.filename,
+            "status": doc.status,
+            "created_at": doc.created_at,
+        }
+        for doc in docs
+    ]
 
-    db = get_db()
-    table_name = "knowledge_base"
 
-    if table_name not in db.table_names():
-        return []
-
-    table = db.open_table(table_name)
-    # Query for unique metadata.source values
-    # In LanceDB, we can use to_pandas() or to_arrow() to process metadata
-    df = table.to_pandas()
-    if df.empty:
-        return []
-
-    # Extract filename from metadata
-    if "metadata" in df.columns:
-        # Assuming metadata is a dict with 'source' or similar
-        files = (
-            df["metadata"]
-            .apply(lambda x: x.get("file") if isinstance(x, dict) else None)
-            .unique()
-            .tolist()
+@router.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_file(file_id: str, db: Session = Depends(get_sql_db)):
+    """
+    Deletes a document from SQL DB, MinIO storage, and LanceDB vector store.
+    """
+    doc = db.query(Document).filter(Document.id == file_id).first()
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
         )
-        return [f for f in files if f]
 
-    return []
+    try:
+        # 1. Delete from MinIO
+        storage_service.delete_file(doc.s3_key)
+
+        # 2. Delete from LanceDB
+        from app.db import get_db
+
+        vdb = get_db()
+        table_name = "knowledge_base"
+        if table_name in vdb.table_names():
+            table = vdb.open_table(table_name)
+            # Delete where metadata.file == s3_key
+            table.delete(f'metadata.file = "{doc.s3_key}"')
+
+        # 3. Delete from SQL DB
+        db.delete(doc)
+        db.commit()
+
+        return None
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Deletion failed: {str(e)}",
+        )

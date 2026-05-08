@@ -40,4 +40,11 @@ class IndexingService:
         return len(chunks)
 
 
-indexing_service = IndexingService()
+_indexing_service = None
+
+
+def get_indexing_service():
+    global _indexing_service
+    if _indexing_service is None:
+        _indexing_service = IndexingService()
+    return _indexing_service

@@ -18,4 +18,11 @@ class SearchService:
         return results
 
 
-search_service = SearchService()
+_search_service = None
+
+
+def get_search_service():
+    global _search_service
+    if _search_service is None:
+        _search_service = SearchService()
+    return _search_service

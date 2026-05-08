@@ -29,5 +29,9 @@ class StorageService:
         self.client.download_file(self.bucket, s3_key, local_path)
         return local_path
 
+    def delete_file(self, s3_key: str):
+        self.client.delete_object(Bucket=self.bucket, Key=s3_key)
+        return s3_key
+
 
 storage_service = StorageService()

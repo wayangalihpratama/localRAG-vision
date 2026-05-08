@@ -6,6 +6,8 @@ import { KnowledgeLibrary } from "../components/dashboard/KnowledgeLibrary";
 import { ConversationNexus } from "../components/dashboard/ConversationNexus";
 import { SourcePreview } from "../components/dashboard/SourcePreview";
 
+import { chatApi } from "../lib/api-client";
+
 export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, type: "ai", text: "Welcome to LocalRAG Vision. Upload a document to start analyzing your data locally." }
@@ -27,11 +29,7 @@ export default function Dashboard() {
     setMessages(prev => [...prev, { id: aiMessageId, type: "ai", text: "", citations: [], isThinking: true }]);
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: currentQuery }),
-      });
+      const response = await chatApi.streamChat(currentQuery);
 
       if (!response.body) return;
       const reader = response.body.getReader();
