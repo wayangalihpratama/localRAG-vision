@@ -1,43 +1,59 @@
-# LocalRAG Vision
+# LocalRAG Vision 🌌
 
-**LocalRAG Vision** is a local-first, multimodal Document Intelligence platform designed for absolute data sovereignty. It allows organizations to interact with sensitive text, image, audio, and video data using generative AI without ever leaving their secure local perimeter.
+**LocalRAG Vision** is a state-of-the-art, local-first Multimodal Knowledge Assistant designed for absolute data sovereignty. Built with a service-oriented architecture, it enables high-fidelity document intelligence using advanced structural extraction and hybrid retrieval.
 
-## 🚀 Key Features
-- **Multimodal RAG**: Seamlessly query across PDF, Images, Audio, and Video.
-- **Privacy First**: 100% Local processing; air-gapped capable.
-- **Precision Indexing**: Powered by Docling, ImageBind, and Late Chunking.
-- **Verifiable Citations**: Temporal and visual seeking for complete attribution.
+![LocalRAG Vision Mockup](./docs/assets/dashboard_mockup.png)
 
-## 📂 Documentation
-- [Product Requirements Document (PRD)](docs/PRD.md)
-- [Low-Level Design (LLD)](docs/LLD.md)
-- [Docker Command Standard](.agent/rules/docker-commands.md)
+## 🚀 Key Features (Phase 1)
+- **Structural Extraction**: Powered by **Docling**, preserving headers, tables, and hierarchies from multi-format uploads.
+- **Hybrid Retrieval Engine**: Robust search logic combining **BAAI/bge-small-en-v1.5** vectors with Full-Text Search (FTS) via **LanceDB**.
+- **Streaming RAG**: Real-time AI responses using **Ollama** (Llama 3) with full citation support.
+- **Premium Glassmorphism UI**: High-fidelity dashboard built with **Next.js 16**, **React 19**, and **Tailwind 4**.
+- **Privacy First**: 100% local processing; zero data leaves your machine.
 
-## 🛠 Tech Stack
-- **Engine**: Ollama (Llama 3, LLaVA)
-- **Orchestration**: LangChain / LlamaIndex
-- **Vector DB**: LanceDB, ChromaDB
-- **UI**: Vercel AI SDK, shadcn/ui
+## 🛠 Tech Stack (2026 Standard)
+- **Frontend**: Next.js 16 (Turbopack), React 19, Tailwind CSS 4, Lucide Icons.
+- **Backend**: FastAPI (Python 3.12), Celery, Redis.
+- **Storage**: MinIO (S3 Compatible), LanceDB (Multimodal Vector Store).
+- **Inference**: Ollama (Local LLM), Docling (Document Parsing).
+- **Quality**: PyTest (Backend), Vitest + React Testing Library (Frontend).
+
+## 📂 Project Structure
+- `backend/`: FastAPI application, worker tasks, and RAG services.
+- `frontend/`: Next.js dashboard and streaming interface.
+- `docs/`: LLD, PRD, and UX specifications.
+- `agent_docs/`: (Internal) Sprint plans and user stories.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Docker & Docker Compose
-- NVIDIA Container Toolkit (for GPU acceleration)
+- [Ollama](https://ollama.com/) installed locally (or running in container)
 
 ### Setup & Run
-1. **Initial Setup** (Pull models & build):
+1. **Initialize Environment**:
    ```bash
-   ./rag.sh setup
+   cp .env.example .env
+   # Update .env with your local settings if necessary
    ```
-2. **Start Services**:
+2. **Start Services** (using the RAG Lifecycle Wrapper):
    ```bash
    ./rag.sh up
    ```
 3. **Access**:
-   - Web UI (Direct): `http://localhost:3000`
-   - Application (Proxy): `http://localhost`
-   - API Docs: `http://localhost/docs` or `http://localhost:8000/docs`
+   - **Main Dashboard**: [http://localhost](http://localhost)
+   - **API Docs**: [http://localhost/docs](http://localhost/docs)
+   - **MinIO Console**: [http://localhost:9001](http://localhost:9001)
+
+## 🧪 Testing
+Run the full quality suite:
+```bash
+# Backend Tests
+./rag.sh backend pytest
+
+# Frontend Tests
+./rag.sh frontend npm test
+```
 
 ---
-*Built with Antigravity BMAD Framework.*
+*Built with ❤️ using the Antigravity BMAD Framework.*
