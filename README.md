@@ -50,8 +50,8 @@
    ```
 
 4. **Access**:
-   - **Main Dashboard**: [http://localhost](http://localhost) (via Nginx) or [http://localhost:3000](http://localhost:3000) (Direct)
-   - **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+   - **Main Dashboard**: [http://localhost:3000](http://localhost:3000) (Unified Entry)
+   - **API Docs**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
    - **MinIO Console**: [http://localhost:9001](http://localhost:9001)
 
 ## 🧪 Testing
