@@ -21,5 +21,9 @@ class Settings:
     PROJECT_NAME: str = "LocalRAG Vision"
     API_V1_STR: str = "/api/v1"
 
+    # Ollama
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3")
+
 
 settings = Settings()
