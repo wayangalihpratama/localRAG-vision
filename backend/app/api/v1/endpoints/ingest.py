@@ -48,3 +48,37 @@ async def upload_document(file: UploadFile = File(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Upload failed: {str(e)}",
         )
+
+
+@router.get("/files", status_code=status.HTTP_200_OK)
+async def list_files():
+    """
+    Returns a list of unique filenames stored in the knowledge base.
+    """
+    from app.db import get_db
+
+    db = get_db()
+    table_name = "knowledge_base"
+
+    if table_name not in db.table_names():
+        return []
+
+    table = db.open_table(table_name)
+    # Query for unique metadata.source values
+    # In LanceDB, we can use to_pandas() or to_arrow() to process metadata
+    df = table.to_pandas()
+    if df.empty:
+        return []
+
+    # Extract filename from metadata
+    if "metadata" in df.columns:
+        # Assuming metadata is a dict with 'source' or similar
+        files = (
+            df["metadata"]
+            .apply(lambda x: x.get("file") if isinstance(x, dict) else None)
+            .unique()
+            .tolist()
+        )
+        return [f for f in files if f]
+
+    return []
