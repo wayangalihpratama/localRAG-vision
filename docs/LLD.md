@@ -61,7 +61,27 @@ Video data is segmented into narratively coherent scenes using:
 - **Knowledge Graph**: Representing temporal relationships between scenes for context-aware video search.
 
 ### 3.3. Parent-Document Retrieval
-Granular chunks are used for initial semantic lookup (Precision), but the full "Parent" context (paragaph or section) is retrieved for the LLM prompt (Coherence) to minimize interpretative errors.
+Granular chunks are used for initial semantic lookup (Precision), but the full "Parent" context (paragraph or section) is retrieved for the LLM prompt (Coherence) to minimize interpretative errors.
+
+## 4. Data Model & API Contracts
+
+### 4.1. LanceDB Schema (`knowledge_base`)
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | string | Unique block identifier. |
+| `vector` | vector(384) | Semantic embedding (e.g., BAAI/bge-small-en-v1.5). |
+| `text` | string | Markdown content (Full-Text Search enabled). |
+| `metadata` | json | `{ page: int, section: str, modality: str }` |
+
+### 4.2. API Endpoints
+- **`POST /api/v1/ingest/upload`**:
+  - Input: `multipart/form-data` (file).
+  - Output: `{ task_id: string }`.
+- **`GET /api/v1/ingest/status/{task_id}`**:
+  - Output: `{ status: "PENDING" | "SUCCESS" | "FAILURE", progress: float }`.
+- **`POST /api/v1/search/query`**:
+  - Input: `{ query: string, top_k: int }`.
+  - Output: `{ results: List[SearchResult] }` where SearchResult includes `text` and `citations`.
 
 ## 4. Security & Isolation
 - **Network Isolation**: 100% local processing with zero external API dependencies.
