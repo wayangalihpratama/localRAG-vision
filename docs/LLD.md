@@ -28,7 +28,7 @@ graph TD
     end
 
     subgraph "Inference Layer (Local)"
-        API --> Ollama[Ollama Engine]
+        Services --> Ollama[Ollama Engine]
         Ollama --> Llama3[Llama 3 / Mistral]
         Ollama --> LLaVA[LLaVA / Vision]
         API --> ImageBind[ImageBind Encoder]
@@ -83,7 +83,18 @@ Granular chunks are used for initial semantic lookup (Precision), but the full "
   - Input: `{ query: string, top_k: int }`.
   - Output: `{ results: List[SearchResult] }` where SearchResult includes `text` and `citations`.
 
-## 4. Security & Isolation
+## 5. Quality Gates & Testing
+
+### 5.1. Backend Testing (PyTest)
+- Unit tests for Services (Storage, Extraction, Indexing, Search, Chat).
+- Integration tests for API endpoints.
+
+### 5.2. Frontend Testing (Vitest)
+- Component testing with React Testing Library.
+- JSDOM environment for browser simulation.
+- Mocking for AI streaming and Lucide icons.
+
+## 6. Security & Isolation
 - **Network Isolation**: 100% local processing with zero external API dependencies.
 - **PII Filtering**: Integrated redaction layer before data enters the vector store.
 - **Encryption**: SQLite/Redis session data is encrypted at rest using local master keys.
