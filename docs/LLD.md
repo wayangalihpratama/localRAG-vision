@@ -18,6 +18,8 @@ graph TD
         Redis --> Worker[Celery Worker]
         Worker --> Docling[Docling Extraction]
         Worker --> Whisper[Whisper STT]
+        Worker --> SceneDetect[PySceneDetect Segmentation]
+        Worker --> LLaVA[LLaVA Visual Analysis]
     end
 
     subgraph "Storage Layer"
@@ -71,7 +73,7 @@ Granular chunks are used for initial semantic lookup (Precision), but the full "
 | `id` | string | Unique block identifier. |
 | `vector` | vector(384) | Semantic embedding (e.g., BAAI/bge-small-en-v1.5). |
 | `text` | string | Markdown content (Full-Text Search enabled). |
-| `metadata` | json | `{ page: int, section: str, modality: str }` |
+| `metadata` | json | `{ file: str, modality: "text" | "video", start_time: float, end_time: float }` |
 
 ### 4.2. API Endpoints
 - **`POST /api/v1/ingest/upload`**:
@@ -98,3 +100,14 @@ Granular chunks are used for initial semantic lookup (Precision), but the full "
 - **Network Isolation**: 100% local processing with zero external API dependencies.
 - **PII Filtering**: Integrated redaction layer before data enters the vector store.
 - **Encryption**: SQLite/Redis session data is encrypted at rest using local master keys.
+
+## 7. Architecture Decision Records (ADRs)
+
+### ADR-002: Speed-First Multimodal Indexing
+- **Status**: Accepted
+- **Context**: Video processing is resource-intensive. Analyzing every frame would lead to unacceptably high latency on local hardware.
+- **Decision**: We use a **"Keyframe-to-Narrative"** strategy. We segment videos using PySceneDetect (CPU-efficient) and only describe the 1st frame of each scene plus periodic samples for long scenes.
+- **Alternatives Considered**:
+  - Real-time frame analysis (Too slow).
+  - Pure transcript-based RAG (Lossy for visual demonstrations).
+- **Consequences**: Fast ingestion with granular visual context, but may miss sub-second visual events.
