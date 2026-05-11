@@ -10,6 +10,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LocalRAG Vision",
   description: "Multimodal Knowledge Assistant",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
