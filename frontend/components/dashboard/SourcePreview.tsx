@@ -22,23 +22,60 @@ export const SourcePreview: React.FC<SourcePreviewProps> = ({ activeSource, onCl
           <span className="text-sm font-bold">Source Context</span>
         </div>
         <button onClick={onClose} className="p-1 hover:bg-foreground/5 rounded-md">
-           <Plus size={18} className="rotate-45" />
+          <Plus size={18} className="rotate-45" />
         </button>
       </header>
       <div className="flex-1 p-6 overflow-y-auto space-y-6">
         <div className="p-4 bg-brand/5 rounded-xl border border-brand/10">
-          <div className="text-xs font-bold text-brand uppercase mb-2">Reference [{activeSource.id}]</div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-bold text-brand uppercase">
+              Reference [{activeSource.id}]
+            </div>
+            {activeSource.metadata?.modality === "video" && (
+              <div className="px-2 py-0.5 bg-brand text-white text-[9px] font-bold rounded uppercase tracking-tighter">
+                Video Scene
+              </div>
+            )}
+          </div>
           <div className="text-sm leading-relaxed text-foreground/80 italic">
             "{activeSource.text}"
           </div>
         </div>
 
         {activeSource.metadata && (
-          <div className="space-y-3">
-             <div className="text-xs font-bold text-foreground/40 uppercase tracking-widest">Metadata</div>
-             <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10 text-[10px] font-mono overflow-x-auto">
-                {JSON.stringify(activeSource.metadata, null, 2)}
-             </div>
+          <div className="space-y-4">
+            <div className="text-xs font-bold text-foreground/40 uppercase tracking-widest">
+              Metadata
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10">
+                <div className="text-[9px] text-foreground/40 uppercase font-bold mb-1">
+                  File
+                </div>
+                <div className="text-xs font-medium truncate">
+                  {activeSource.metadata.file || "Unknown"}
+                </div>
+              </div>
+              {activeSource.metadata.start_time !== undefined && (
+                <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10">
+                  <div className="text-[9px] text-foreground/40 uppercase font-bold mb-1">
+                    Timestamp
+                  </div>
+                  <div className="text-xs font-medium text-brand">
+                    {Math.floor(activeSource.metadata.start_time / 60)
+                      .toString()
+                      .padStart(2, "0")}
+                    :
+                    {Math.floor(activeSource.metadata.start_time % 60)
+                      .toString()
+                      .padStart(2, "0")}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10 text-[9px] font-mono overflow-x-auto whitespace-pre">
+              {JSON.stringify(activeSource.metadata, null, 2)}
+            </div>
           </div>
         )}
       </div>

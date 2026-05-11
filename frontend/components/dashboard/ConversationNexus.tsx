@@ -70,15 +70,31 @@ export const ConversationNexus: React.FC<ConversationNexusProps> = ({
               </div>
               {msg.type === "ai" && msg.citations && msg.citations.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-foreground/10">
-                  {msg.citations.map((cite: any) => (
-                    <button
-                      key={cite.id}
-                      onClick={() => onSelectCitation(cite)}
-                      className="text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand px-2 py-1 rounded-md hover:bg-brand/20 transition-all"
-                    >
-                      [{cite.id}] {cite.metadata?.filename || "Source"}
-                    </button>
-                  ))}
+                  {msg.citations.map((cite: any) => {
+                    const formatTime = (seconds: number) => {
+                      const mins = Math.floor(seconds / 60);
+                      const secs = Math.floor(seconds % 60);
+                      return `${mins.toString().padStart(2, "0")}:${secs
+                        .toString()
+                        .padStart(2, "0")}`;
+                    };
+
+                    const timeStr =
+                      cite.metadata?.start_time !== undefined
+                        ? ` @ ${formatTime(cite.metadata.start_time)}`
+                        : "";
+
+                    return (
+                      <button
+                        key={cite.id}
+                        onClick={() => onSelectCitation(cite)}
+                        className="text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand px-2 py-1 rounded-md hover:bg-brand/20 transition-all"
+                      >
+                        [{cite.id}] {cite.metadata?.filename || "Source"}
+                        {timeStr}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
