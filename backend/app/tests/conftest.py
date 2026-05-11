@@ -47,9 +47,9 @@ def mock_all_services():
         "app.db.get_embedding_model"
     ) as mock_embed, patch(
         "app.services.extraction_service.get_extraction_service"
-    ) as mock_extract, patch(
+    ), patch(
         "app.services.indexing_service.get_indexing_service"
-    ) as mock_index, patch(
+    ), patch(
         "app.worker.process_document.delay"
     ) as mock_celery, patch(
         "httpx.AsyncClient"
@@ -59,5 +59,18 @@ def mock_all_services():
         mock_vdb.return_value = MagicMock()
         mock_embed.return_value = MagicMock()
         mock_celery.return_value = MagicMock(id="test-task-id")
+
+        # Setup httpx mock defaults
+        mock_instance = mock_httpx.return_value
+        mock_instance.__aenter__.return_value = mock_instance
+        mock_instance.get.return_value = MagicMock(
+            status_code=200, json=lambda: {}
+        )
+        mock_instance.post.return_value = MagicMock(
+            status_code=200, json=lambda: {}
+        )
+        mock_instance.delete.return_value = MagicMock(
+            status_code=200, json=lambda: {}
+        )
 
         yield
