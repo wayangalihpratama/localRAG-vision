@@ -24,6 +24,8 @@ async def upload_document(
         "application/vnd.openxmlformats-officedocument."
         "wordprocessingml.document",
         "text/plain",
+        "video/mp4",
+        "video/quicktime",
     ]
     if file.content_type not in allowed_types:
         raise HTTPException(
@@ -35,38 +37,35 @@ async def upload_document(
     file_extension = os.path.splitext(file.filename)[1]
     s3_key = f"{file_id}{file_extension}"
 
-    try:
-        # 1. Storage Service Upload
-        storage_service.upload_file(file.file, s3_key)
+    # 1. Storage Service Upload
+    storage_service.upload_file(file.file, s3_key)
 
-        # 2. Create DB Record
-        db_doc = Document(
-            id=file_id,
-            filename=file.filename,
-            s3_key=s3_key,
-            status=DocumentStatus.PROCESSING,
-        )
-        db.add(db_doc)
-        db.commit()
+    # 2. Create DB Record
+    modality = "video" if file.content_type.startswith("video/") else "text"
+    db_doc = Document(
+        id=file_id,
+        filename=file.filename,
+        s3_key=s3_key,
+        status=DocumentStatus.PROCESSING,
+        modality=modality,
+    )
+    db.add(db_doc)
+    db.commit()
 
-        # 3. Trigger Background Task
-        task = process_document.delay(file_id, s3_key)
+    # 3. Trigger Background Task
+    task = process_document.delay(file_id, s3_key)
 
-        # 4. Update task_id in DB
-        db_doc.task_id = task.id
-        db.commit()
+    # 4. Update task_id in DB
+    db_doc.task_id = task.id
+    db.commit()
 
-        return {
-            "task_id": task.id,
-            "file_id": file_id,
-            "filename": file.filename,
-            "message": "File uploaded successfully. Processing started.",
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Upload failed: {str(e)}",
-        )
+    return {
+        "task_id": task.id,
+        "file_id": file_id,
+        "filename": file.filename,
+        "modality": modality,
+        "message": "File uploaded successfully. Processing started.",
+    }
 
 
 @router.get("/files", status_code=status.HTTP_200_OK)
@@ -80,6 +79,7 @@ async def list_files(db: Session = Depends(get_sql_db)):
             "id": doc.id,
             "filename": doc.filename,
             "status": doc.status,
+            "modality": doc.modality,
             "created_at": doc.created_at,
         }
         for doc in docs
@@ -138,5 +138,6 @@ async def get_task_status(task_id: str, db: Session = Depends(get_sql_db)):
         "task_id": doc.task_id,
         "file_id": doc.id,
         "status": doc.status,
+        "modality": doc.modality,
         "metadata": doc.metadata_json,
     }

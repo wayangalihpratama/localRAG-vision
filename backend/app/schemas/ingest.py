@@ -5,4 +5,5 @@ class IngestResponse(BaseModel):
     task_id: str
     file_id: str
     filename: str
+    modality: str = "text"
     message: str

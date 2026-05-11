@@ -18,6 +18,7 @@ class Document(Base):
     s3_key = Column(String, unique=True)
     status = Column(Enum(DocumentStatus), default=DocumentStatus.PROCESSING)
     task_id = Column(String, nullable=True)
+    modality = Column(String, default="text")  # "text" or "video"
     metadata_json = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(

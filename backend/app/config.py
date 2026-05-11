@@ -24,6 +24,7 @@ class Settings:
     # Ollama
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3")
+    OLLAMA_VLM_MODEL: str = os.getenv("OLLAMA_VLM_MODEL", "llava:7b")
 
 
 settings = Settings()
