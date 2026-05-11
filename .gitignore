@@ -36,3 +36,6 @@ Thumbs.db
 # Project Specific
 minio-data/
 ollama-data/
+backend/data/
+file:testdb
+backend/file:testdb

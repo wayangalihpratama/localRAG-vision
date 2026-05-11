@@ -15,7 +15,9 @@ class SearchService:
         query_vector = self.model.encode(query)
 
         try:
-            results = table.search(query_vector.tolist()).limit(limit).to_list()
+            results = (
+                table.search(query_vector.tolist()).limit(limit).to_list()
+            )
             return results
         except Exception as e:
             raise Exception(str(e))
