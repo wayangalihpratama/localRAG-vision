@@ -4,7 +4,7 @@ import Dashboard from './page'
 
 // Mock icons to avoid rendering complexity in unit tests
 vi.mock('lucide-react', () => ({
-  Plus: () => <div data-testid="plus-icon" />,
+  Plus: () => <div />,
   MessageSquare: () => <div />,
   FileText: () => <div />,
   Settings: () => <div />,
@@ -14,6 +14,9 @@ vi.mock('lucide-react', () => ({
   Loader2: () => <div />,
   Database: () => <div />,
   Search: () => <div />,
+  Upload: () => <div />,
+  Trash2: () => <div />,
+  X: () => <div />,
 }))
 
 test('Dashboard renders the branding title', () => {
