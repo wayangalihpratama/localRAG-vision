@@ -8,6 +8,7 @@ services:
       - "8000:8000"
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=mistral
       - DATABASE_URL=sqlite:///./localrag.db
       - REDIS_URL=redis://redis:6379/0
       - S3_ENDPOINT=http://minio:9000
@@ -30,6 +31,7 @@ services:
       - ./backend:/app
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=mistral
       - REDIS_URL=redis://redis:6379/0
       - S3_ENDPOINT=http://minio:9000
       - S3_ACCESS_KEY=minioadmin

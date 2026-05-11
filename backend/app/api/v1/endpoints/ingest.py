@@ -122,3 +122,21 @@ async def delete_file(file_id: str, db: Session = Depends(get_sql_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Deletion failed: {str(e)}",
         )
+
+
+@router.get("/status/{task_id}", status_code=status.HTTP_200_OK)
+async def get_task_status(task_id: str, db: Session = Depends(get_sql_db)):
+    """
+    Returns the status of a document processing task.
+    """
+    doc = db.query(Document).filter(Document.task_id == task_id).first()
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Task not found"
+        )
+    return {
+        "task_id": doc.task_id,
+        "file_id": doc.id,
+        "status": doc.status,
+        "metadata": doc.metadata_json,
+    }
