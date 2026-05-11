@@ -29,7 +29,7 @@ graph TD
 
     subgraph "Inference Layer (Local)"
         Services --> Ollama[Ollama Engine]
-        Ollama --> Llama3[Llama 3 / Mistral]
+        Ollama --> Mistral[Mistral / Llama 3]
         Ollama --> LLaVA[LLaVA / Vision]
         API --> ImageBind[ImageBind Encoder]
         API --> Reranker[Cross-Encoder Reranker]
@@ -40,7 +40,7 @@ graph TD
 
 | Component | Technology | Role |
 | :--- | :--- | :--- |
-| **Inference Engine** | **Ollama (Native)** | Host-based engine for Llama 3 and LLaVA. Connected via `host-gateway` for GPU (Metal) acceleration. |
+| **Inference Engine** | **Ollama (Native)** | Host-based engine for Mistral and LLaVA. Connected via `host-gateway` for GPU (Metal) acceleration. |
 | **Orchestration** | **LangChain / LlamaIndex** | Workflow management, agents, and conversational memory. |
 | **API Framework** | **FastAPI** | Async processing for ingestion and real-time streaming. |
 | **Vector Store** | **LanceDB** | Optimized for video and multimodal columnar storage. |
@@ -78,7 +78,7 @@ Granular chunks are used for initial semantic lookup (Precision), but the full "
   - Input: `multipart/form-data` (file).
   - Output: `{ task_id: string }`.
 - **`GET /api/v1/ingest/status/{task_id}`**:
-  - Output: `{ status: "PENDING" | "SUCCESS" | "FAILURE", progress: float }`.
+  - Output: `{ id: str, filename: str, status: "pending" | "completed" | "failed", created_at: str }`.
 - **`POST /api/v1/search/query`**:
   - Input: `{ query: string, top_k: int }`.
   - Output: `{ results: List[SearchResult] }` where SearchResult includes `text` and `citations`.

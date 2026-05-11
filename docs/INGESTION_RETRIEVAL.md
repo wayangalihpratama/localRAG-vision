@@ -1,7 +1,7 @@
 # Feature Specification: Document Ingestion & Retrieval Pipeline 🚀
 
 **Author**: John (Product Manager)
-**Status**: Draft (Pending Approval)
+**Status**: Final (Approved)
 **Date**: 2026-05-08
 
 ## 1. Summary
@@ -30,7 +30,7 @@ The Document Ingestion & Retrieval Pipeline is the core engine of LocalRAG Visio
 2. **Task Queue**: Ingestion task is pushed to **Redis**.
 3. **Structural Extraction**: Celery worker pulls the file and runs **Docling** to generate a `DoclingDocument`.
 4. **Structural Chunking**: Use Docling's hierarchy tree to split text into "Semantic Blocks" (e.g., specific sections or full tables).
-5. **Embedding**: Blocks are embedded using a local model (via Ollama).
+5. **Embedding**: Blocks are embedded using a local **sentence-transformers** model (`bge-small-en-v1.5`) in the backend.
 6. **Indexing**: Chunks and vectors are stored in **LanceDB** with a Full-Text Search (FTS) index enabled.
 
 ### 4.2. Search Workflow
@@ -38,7 +38,7 @@ The Document Ingestion & Retrieval Pipeline is the core engine of LocalRAG Visio
 2. **Dual-Retrieval**:
    - **Vector Search**: Semantic lookup for conceptual matches.
    - **FTS Search (BM25)**: Lexical lookup for exact matches (IDs, serial numbers).
-3. **RRF Fusion**: Merge results using Reciprocal Rank Fusion (RRF) to produce a unified relevance score.
+3. **Fusion**: Merge results. *Note: Current implementation uses Pure Vector Search; RRF Fusion is slated for Phase 2 optimization.*
 4. **Context Assembly**: Retrieved blocks are formatted with citations for the LLM.
 
 ## 5. UI/UX Requirements

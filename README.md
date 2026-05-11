@@ -7,7 +7,7 @@
 ## 🚀 Key Features (Phase 1)
 - **Structural Extraction**: Powered by **Docling**, preserving headers, tables, and hierarchies from multi-format uploads.
 - **Hybrid Retrieval Engine**: Robust search logic combining **BAAI/bge-small-en-v1.5** vectors with Full-Text Search (FTS) via **LanceDB**.
-- **Streaming RAG**: Real-time AI responses using **Ollama** (Llama 3) with full citation support.
+- **Streaming RAG**: Real-time AI responses using **Ollama** (Mistral/Llama 3) with full citation support.
 - **Premium Glassmorphism UI**: High-fidelity dashboard built with **Next.js 16**, **React 19**, and **Tailwind 4**.
 - **Privacy First**: 100% local processing; zero data leaves your machine.
 
@@ -40,7 +40,7 @@
 
 2. **Pull Required Models**:
    ```bash
-   ollama pull llama3
+   ollama pull mistral
    ollama pull llava
    ```
 
