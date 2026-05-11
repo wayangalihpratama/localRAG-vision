@@ -26,25 +26,62 @@ def process_document(file_id: str, s3_key: str):
             # 1. Download
             storage_service.download_file(s3_key, local_path)
 
-            # 2. Extract
-            markdown_content = get_extraction_service().extract_markdown(
-                local_path
-            )
-
-            # 3. Index
-            chunks_indexed = get_indexing_service().index_markdown(
-                s3_key, markdown_content
-            )
-
-            # 4. Update Status to COMPLETED
+            # Get modality from DB
             db_doc = db.query(Document).filter(Document.id == file_id).first()
-            if db_doc:
+            if not db_doc:
+                raise Exception(f"Document {file_id} not found in DB")
+
+            if db_doc.modality == "video":
+                # --- Video Pipeline (STORY-007, STORY-008) ---
+                from app.services.video_service import get_video_service
+
+                # 2. Segment Video
+                segments = get_video_service().segment_video(local_path)
+
+                # 3. Extract Keyframes
+                keyframes_dir = os.path.join(temp_dir, "keyframes")
+                keyframe_paths = get_video_service().extract_keyframes(
+                    local_path, segments, keyframes_dir
+                )
+
+                # 4. Visual Analysis (STORY-008)
+                visual_descriptions = get_video_service().analyze_keyframes(
+                    keyframe_paths
+                )
+
+                # 5. Index Video (STORY-009)
+                chunks_indexed = get_indexing_service().index_video(
+                    s3_key, segments, visual_descriptions
+                )
+
+                db_doc.status = DocumentStatus.COMPLETED
+                db_doc.metadata_json = {
+                    "scenes": len(segments),
+                    "segments": segments,
+                    "visual_descriptions": visual_descriptions,
+                    "modality": "video",
+                }
+            else:
+                # --- Text/PDF Pipeline ---
+                # 2. Extract
+                markdown_content = get_extraction_service().extract_markdown(
+                    local_path
+                )
+
+                # 3. Index
+                chunks_indexed = get_indexing_service().index_markdown(
+                    s3_key, markdown_content
+                )
+
+                # 4. Update Status to COMPLETED
                 db_doc.status = DocumentStatus.COMPLETED
                 db_doc.metadata_json = {
                     "chunks": chunks_indexed,
                     "length": len(markdown_content),
+                    "modality": "text",
                 }
-                db.commit()
+
+            db.commit()
 
             return {
                 "status": "completed",
